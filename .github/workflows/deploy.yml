@@ -1,0 +1,35 @@
+name: Deploy scripts to cdn
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Delete release branch && Create an empty one
+        run: |
+          git branch -D release || true
+          git checkout --orphan release
+          git reset --hard
+
+      - name: Copy **/*.sh files from main branch to release branch
+        run: |
+          git checkout main -- '**/*.sh'
+          find . -name '*.sh' -exec sh -c 'mv "$0" "$(basename "$0")"' {} \;
+          find . -type d -empty -delete
+          git add -A
+          git commit -m "Deploy scripts to cdn" || echo "No changes to commit"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: release
+          force: true
