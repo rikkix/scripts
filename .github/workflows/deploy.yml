@@ -13,6 +13,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Set Git identity
+        run: |
+          # Use a generic identity for the Action 
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
       - name: Delete release branch && Create an empty one
         run: |
           git branch -D release || true
